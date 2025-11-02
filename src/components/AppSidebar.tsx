@@ -73,14 +73,8 @@ export const AppSidebar = () => {
           <SidebarHeader className="border-b border-sidebar-border p-6">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden bg-gradient-to-br from-primary to-accent">
-                  {/* Place your logo at public/logo.png. The image will replace the Bot icon. */}
-                  <img
-                    src="/logo.png"
-                    alt="EduSeva logo"
-                    className="h-10 w-10 object-cover"
-                    onError={(e: any) => { e.currentTarget.src = '/logo.svg'; }}
-                  />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
+                  <Bot className="h-6 w-6 text-primary-foreground" />
                 </div>
                 <div>
                   <h1 className="text-lg font-bold text-sidebar-foreground">EduSeva</h1>
