@@ -89,10 +89,8 @@ export const PDFUpload = () => {
 
         toast.success(response.message);
         
-        // Navigate to chat page after successful upload
-        setTimeout(() => {
-          navigate("/chat");
-        }, 1000);
+        // Do not navigate after upload — stay on the Upload page.
+        // Previously this navigated to /chat; removed to keep user on the upload view.
       } catch (error) {
         setFiles((prev) =>
           prev.map((f) =>
