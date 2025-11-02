@@ -26,7 +26,12 @@ export const ChatInterface = () => {
   useEffect(() => {
     const cachedMessages = cache.get<Message[]>(CACHE_KEYS.CHAT_HISTORY);
     if (cachedMessages && Array.isArray(cachedMessages)) {
-      setMessages(cachedMessages);
+      // Convert timestamp strings back to Date objects
+      const messagesWithDates = cachedMessages.map(msg => ({
+        ...msg,
+        timestamp: new Date(msg.timestamp)
+      }));
+      setMessages(messagesWithDates);
     }
   }, []);
 
