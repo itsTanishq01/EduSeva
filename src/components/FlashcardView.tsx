@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, RotateCw, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { generateFlashcards } from "@/services/api";
 import { toast } from "sonner";
 import { cache, CACHE_KEYS } from "@/lib/cache";
@@ -18,25 +20,22 @@ export const FlashcardView = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [numCards, setNumCards] = useState(10);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Load flashcards on mount
   useEffect(() => {
     loadFlashcards();
   }, []);
 
-  const loadFlashcards = async () => {
-    // Try loading from cache first
-    const cachedFlashcards = cache.get<Flashcard[]>(CACHE_KEYS.FLASHCARDS);
-    if (cachedFlashcards && Array.isArray(cachedFlashcards) && cachedFlashcards.length > 0) {
-      setFlashcards(cachedFlashcards);
-      toast.success(`Loaded ${cachedFlashcards.length} cached flashcards`);
-      return;
-    }
-
+  const loadFlashcards = async (count?: number) => {
+    const cardsToGenerate = count || numCards;
+    
     setIsLoading(true);
+    setShowSettings(false);
     try {
       const response = await generateFlashcards({
-        numCards: 10,
+        numCards: cardsToGenerate,
         difficulty: "intermediate",
       });
       
@@ -44,6 +43,8 @@ export const FlashcardView = () => {
       cache.set(CACHE_KEYS.FLASHCARDS, response.flashcards);
       
       setFlashcards(response.flashcards);
+      setCurrentIndex(0);
+      setIsFlipped(false);
       toast.success(`Generated ${response.flashcards.length} flashcards`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to load flashcards");
@@ -105,14 +106,46 @@ export const FlashcardView = () => {
     );
   }
 
-  if (flashcards.length === 0) {
+  if (flashcards.length === 0 && !showSettings) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-6 pt-20 space-y-4">
         <p className="text-muted-foreground">No flashcards available</p>
-        <Button onClick={loadFlashcards}>
+        <Button onClick={() => setShowSettings(true)}>
           <RefreshCw className="mr-2 h-4 w-4" />
           Generate Flashcards
         </Button>
+      </div>
+    );
+  }
+
+  if (showSettings) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center p-6 pt-20">
+        <Card className="w-full max-w-md p-6 space-y-4">
+          <h2 className="text-2xl font-bold text-center">Generate Flashcards</h2>
+          <div className="space-y-2">
+            <Label htmlFor="numCards">Number of Flashcards</Label>
+            <Input
+              id="numCards"
+              type="number"
+              min="1"
+              max="50"
+              value={numCards}
+              onChange={(e) => setNumCards(parseInt(e.target.value) || 10)}
+            />
+            <p className="text-sm text-muted-foreground">Choose between 1-50 flashcards</p>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => loadFlashcards(numCards)} className="flex-1">
+              Generate
+            </Button>
+            {flashcards.length > 0 && (
+              <Button variant="outline" onClick={() => setShowSettings(false)}>
+                Cancel
+              </Button>
+            )}
+          </div>
+        </Card>
       </div>
     );
   }
@@ -202,7 +235,7 @@ export const FlashcardView = () => {
           <div className="text-center text-sm text-muted-foreground bg-muted/50 rounded-full px-4 py-2">
             Use arrow keys to navigate • Space/Enter to flip
           </div>
-          <Button variant="outline" onClick={loadFlashcards}>
+          <Button variant="outline" onClick={() => setShowSettings(true)}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Regenerate
           </Button>
