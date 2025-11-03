@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { chat } from "@/services/api";
 import { toast } from "sonner";
 import { cache, CACHE_KEYS } from "@/lib/cache";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   id: string;
@@ -114,7 +115,23 @@ export const ChatInterface = () => {
                     : "bg-card border text-foreground"
                 }`}
               >
-                <p className="text-sm leading-relaxed">{message.content}</p>
+                <div className="text-sm leading-relaxed prose prose-sm dark:prose-invert max-w-none">
+                  <ReactMarkdown
+                    components={{
+                      p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                      ul: ({ children }) => <ul className="list-disc ml-4 mb-2">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-decimal ml-4 mb-2">{children}</ol>,
+                      li: ({ children }) => <li className="mb-1">{children}</li>,
+                      strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                      em: ({ children }) => <em className="italic">{children}</em>,
+                      h1: ({ children }) => <h1 className="text-xl font-bold mb-2">{children}</h1>,
+                      h2: ({ children }) => <h2 className="text-lg font-bold mb-2">{children}</h2>,
+                      h3: ({ children }) => <h3 className="text-base font-bold mb-2">{children}</h3>,
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
                 <span className="mt-2 block text-xs opacity-70">
                   {message.timestamp.toLocaleTimeString([], {
                     hour: "2-digit",
