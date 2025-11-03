@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { uploadDocument } from "@/services/api";
+import { cache } from "@/lib/cache";
 
 interface UploadedFile {
   id: string;
@@ -79,6 +80,9 @@ export const PDFUpload = () => {
 
         clearInterval(progressInterval);
 
+        // Clear all caches when a new document is uploaded
+        cache.clear();
+
         setFiles((prev) =>
           prev.map((f) =>
             f.id === uploadedFile.id
@@ -124,7 +128,7 @@ export const PDFUpload = () => {
               <Bot className="h-20 w-20 mx-auto text-primary relative z-10" />
             </div>
             <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Welcome to EduSeva
+              Welcome to EduMate
             </h2>
             <p className="text-muted-foreground max-w-md text-lg">
               Your AI study assistant. Get started by uploading a PDF or asking a question.
