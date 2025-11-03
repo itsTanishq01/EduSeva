@@ -11,6 +11,7 @@ import { FileText, Download, Printer, Loader2 } from "lucide-react";
 import { generateQuestionPaper } from "@/services/api";
 import { toast } from "sonner";
 import { cache, CACHE_KEYS } from "@/lib/cache";
+import ReactMarkdown from "react-markdown";
 
 interface Question {
   question: string;
@@ -121,6 +122,63 @@ export default function QuestionPaper() {
   };
 
   const totalMarks = settings.oneMarkCount * 1 + settings.twoMarkCount * 2 + settings.threeMarkCount * 3;
+
+  const handleDownload = () => {
+    const content = generatePaperContent();
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `question-paper-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("Downloaded question paper");
+  };
+
+  const generatePaperContent = () => {
+    let content = "QUESTION PAPER\n";
+    content += "=".repeat(50) + "\n\n";
+    content += `Total Marks: ${totalMarks}\n`;
+    content += `Difficulty: ${settings.difficulty.charAt(0).toUpperCase() + settings.difficulty.slice(1)}\n`;
+    if (settings.topic) content += `Topic: ${settings.topic}\n`;
+    content += "\n" + "=".repeat(50) + "\n\n";
+
+    const oneMarkQs = questions.filter(q => q.marks === 1);
+    const twoMarkQs = questions.filter(q => q.marks === 2);
+    const threeMarkQs = questions.filter(q => q.marks === 3);
+
+    if (oneMarkQs.length > 0) {
+      content += "SECTION A - 1-Mark Questions (≈20 words each)\n\n";
+      oneMarkQs.forEach((q, i) => {
+        content += `${i + 1}. ${q.question}\n\n`;
+      });
+      content += "\n";
+    }
+
+    if (twoMarkQs.length > 0) {
+      content += "SECTION B - 2-Mark Questions (≈40 words each)\n\n";
+      twoMarkQs.forEach((q, i) => {
+        content += `${i + 1}. ${q.question}\n\n`;
+      });
+      content += "\n";
+    }
+
+    if (threeMarkQs.length > 0) {
+      content += "SECTION C - 3-Mark Questions (≈80 words each)\n\n";
+      threeMarkQs.forEach((q, i) => {
+        content += `${i + 1}. ${q.question}\n\n`;
+      });
+    }
+
+    return content;
+  };
+
+  const handlePrint = () => {
+    window.print();
+    toast.success("Opening print dialog");
+  };
 
   return (
     <div className="container max-w-5xl mx-auto p-6 pt-20 space-y-6">
@@ -234,11 +292,11 @@ export default function QuestionPaper() {
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleDownload}>
                   <Download className="mr-2 h-4 w-4" />
                   Download
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => window.print()}>
+                <Button variant="outline" size="sm" onClick={handlePrint}>
                   <Printer className="mr-2 h-4 w-4" />
                   Print
                 </Button>
@@ -268,12 +326,15 @@ export default function QuestionPaper() {
                               <span className="font-medium text-muted-foreground min-w-[2rem]">
                                 {index + 1}.
                               </span>
-                              <p className="flex-1">{q.question}</p>
+                              <div className="flex-1 prose prose-sm dark:prose-invert max-w-none">
+                                <ReactMarkdown>{q.question}</ReactMarkdown>
+                              </div>
                               <Badge variant="secondary" className="shrink-0">1M</Badge>
                             </div>
                             {visibleAnswers.has(globalIndex) && (
-                              <div className="ml-11 p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                                <p className="text-sm"><strong>Answer:</strong> {q.answer}</p>
+                              <div className="ml-11 p-3 bg-primary/5 border border-primary/20 rounded-lg prose prose-sm dark:prose-invert max-w-none">
+                                <p className="text-sm font-semibold mb-1">Answer:</p>
+                                <ReactMarkdown>{q.answer}</ReactMarkdown>
                               </div>
                             )}
                           </div>
@@ -306,12 +367,15 @@ export default function QuestionPaper() {
                                 <span className="font-medium text-muted-foreground min-w-[2rem]">
                                   {index + 1}.
                                 </span>
-                                <p className="flex-1">{q.question}</p>
+                                <div className="flex-1 prose prose-sm dark:prose-invert max-w-none">
+                                  <ReactMarkdown>{q.question}</ReactMarkdown>
+                                </div>
                                 <Badge variant="secondary" className="shrink-0">2M</Badge>
                               </div>
                               {visibleAnswers.has(globalIndex) && (
-                                <div className="ml-11 p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                                  <p className="text-sm"><strong>Answer:</strong> {q.answer}</p>
+                                <div className="ml-11 p-3 bg-primary/5 border border-primary/20 rounded-lg prose prose-sm dark:prose-invert max-w-none">
+                                  <p className="text-sm font-semibold mb-1">Answer:</p>
+                                  <ReactMarkdown>{q.answer}</ReactMarkdown>
                                 </div>
                               )}
                             </div>
@@ -345,12 +409,15 @@ export default function QuestionPaper() {
                                 <span className="font-medium text-muted-foreground min-w-[2rem]">
                                   {index + 1}.
                                 </span>
-                                <p className="flex-1">{q.question}</p>
+                                <div className="flex-1 prose prose-sm dark:prose-invert max-w-none">
+                                  <ReactMarkdown>{q.question}</ReactMarkdown>
+                                </div>
                                 <Badge variant="secondary" className="shrink-0">3M</Badge>
                               </div>
                               {visibleAnswers.has(globalIndex) && (
-                                <div className="ml-11 p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                                  <p className="text-sm"><strong>Answer:</strong> {q.answer}</p>
+                                <div className="ml-11 p-3 bg-primary/5 border border-primary/20 rounded-lg prose prose-sm dark:prose-invert max-w-none">
+                                  <p className="text-sm font-semibold mb-1">Answer:</p>
+                                  <ReactMarkdown>{q.answer}</ReactMarkdown>
                                 </div>
                               )}
                             </div>
