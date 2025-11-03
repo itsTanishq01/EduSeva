@@ -25,7 +25,7 @@ const teamMembers = [
     github: "",
   },
   {
-    name: "Rahul Lenda",
+    name: "Rahul Lenka",
     role: "LLM",
     instagram: "",
     linkedin: "",
