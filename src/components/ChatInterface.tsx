@@ -22,17 +22,10 @@ export const ChatInterface = () => {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Load cached chat history on mount
+  // Clear chat history on mount (fresh start on reload)
   useEffect(() => {
-    const cachedMessages = cache.get<Message[]>(CACHE_KEYS.CHAT_HISTORY);
-    if (cachedMessages && Array.isArray(cachedMessages)) {
-      // Convert timestamp strings back to Date objects
-      const messagesWithDates = cachedMessages.map(msg => ({
-        ...msg,
-        timestamp: new Date(msg.timestamp)
-      }));
-      setMessages(messagesWithDates);
-    }
+    cache.remove(CACHE_KEYS.CHAT_HISTORY);
+    setMessages([]);
   }, []);
 
   // Save messages to cache whenever they change
