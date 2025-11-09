@@ -1,8 +1,43 @@
 import { Card } from "@/components/ui/card";
 import { User, Mail, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function AccountDetails() {
+  const [email, setEmail] = useState("");
+  const [createdAt, setCreatedAt] = useState("");
+  const [fullName, setFullName] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+
+      setEmail(user.email || "");
+      setCreatedAt(user.created_at || "");
+
+      // Fetch profile data
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profile) {
+        setFullName(profile.full_name || "");
+      }
+    };
+
+    fetchUserData();
+  }, [navigate]);
+
   return (
     <div className="container max-w-4xl mx-auto p-6 pt-20 space-y-8">
       <div className="flex items-center gap-3">
@@ -21,7 +56,7 @@ export default function AccountDetails() {
             <User className="h-10 w-10 text-primary-foreground" />
           </div>
           <div>
-            <h2 className="text-2xl font-semibold text-foreground">User Account</h2>
+            <h2 className="text-2xl font-semibold text-foreground">{fullName || "User Account"}</h2>
             <p className="text-sm text-muted-foreground">Active member</p>
           </div>
         </div>
@@ -31,7 +66,7 @@ export default function AccountDetails() {
             <Mail className="h-5 w-5 text-primary" />
             <div>
               <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium text-foreground">user@example.com</p>
+              <p className="font-medium text-foreground">{email || "Loading..."}</p>
             </div>
           </div>
 
@@ -39,7 +74,7 @@ export default function AccountDetails() {
             <Calendar className="h-5 w-5 text-primary" />
             <div>
               <p className="text-sm text-muted-foreground">Member Since</p>
-              <p className="font-medium text-foreground">{new Date().toLocaleDateString()}</p>
+              <p className="font-medium text-foreground">{createdAt ? new Date(createdAt).toLocaleDateString() : "Loading..."}</p>
             </div>
           </div>
         </div>
